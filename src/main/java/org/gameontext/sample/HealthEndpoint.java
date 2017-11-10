@@ -13,33 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.gameontext.sample.map.client;
+package org.gameontext.sample;
 
-public class MapData {
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-    private String name;
-    private String fullName;
-    private String description;
+import org.gameontext.sample.RoomImplementation;
 
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
+@Path("/health")
+public class HealthEndpoint {
 
-    public String getFullName() {
-        return fullName;
-    }
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    @Inject
+    private RoomImplementation roomImplementation;
 
-
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
+    @GET
+    public Response health() {
+        if ( roomImplementation != null && roomImplementation.ok() ) {
+            return Response.ok("OK").build();
+        }
+        return Response.status(Status.SERVICE_UNAVAILABLE).build();
     }
 }

@@ -20,26 +20,21 @@ import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.websocket.Session;
 
-import org.gameontext.sample.map.client.MapClient;
 import org.gameontext.sample.protocol.Message;
 import org.gameontext.sample.protocol.RoomEndpoint;
-import org.gameontext.sample.rest.HealthEndpoint;
-import org.gameontext.sample.rest.RestApplication;
 
 /**
- * Here is where your room implementation lives. 
- * 
+ * Here is where your room implementation lives.
+ *
  * <p>
- * A JAX-RS application is defined in {@link RestApplication}, 
+ * A JAX-RS application is defined in {@link RestApplication},
  * with a basic health check endpoint in {@link HealthEndpoint}.
  * <p>
- * The WebSocket endpoint is defined in {@link RoomEndpoint}, 
+ * The WebSocket endpoint is defined in {@link RoomEndpoint},
  * with {@link Message} as the text-based payload being sent on the wire.
  * <p>
  * This is an ApplicationScoped CDI bean, which means it will be started
@@ -49,7 +44,6 @@ import org.gameontext.sample.rest.RestApplication;
 public class RoomImplementation {
 
     /** The id of the room: you can retrieve this from the room editing view in the UI */
-    public static final String ROOM_ID = "TheGeneratedIdOfThisRoom";
     public static final String LOOK_UNKNOWN = "It doesn't look interesting";
     public static final String UNKNOWN_COMMAND = "This room is a basic model. It doesn't understand `%s`";
     public static final String UNSPECIFIED_DIRECTION = "You didn't say which way you wanted to go.";
@@ -60,31 +54,11 @@ public class RoomImplementation {
     public static final String GOODBYE_ALL = "%s has gone";
     public static final String GOODBYE_USER = "Bye!";
 
-    /**
-     * The room id: this is translated from the ROOM_ID environment variable into
-     * a JNDI value by server.xml (Liberty)
-     */
-    @Resource(lookup = "roomId")
-    protected String roomId;
-
-    @Inject
-    protected MapClient mapClient;
-
     protected RoomDescription roomDescription = new RoomDescription();
 
     @PostConstruct
     protected void postConstruct() {
-
-        if ( roomId == null || roomId.contains("ROOM_ID") ) {
-            // The room id was not set by the environment; make one up.
-            roomId = ROOM_ID;
-        } else {
-            // we have a custom room id! let's see what the map thinks.
-            mapClient.updateRoom(roomId, roomDescription);
-        }
-
         // Customize the room
-    	
         roomDescription.addCommand("/use", "Take, hold, or deploy (something) as a means of accomplishing or achieving something");
 
         roomDescription.addItem("red teddy bear");
@@ -121,11 +95,11 @@ public class RoomImplementation {
         switch(message.getTarget()) {
 
         case roomHello:
-            //		roomHello,<roomId>,{
-            //		    "username": "username",
-            //		    "userId": "<userId>",
-            //		    "version": 1|2
-            //		}
+            //        roomHello,<roomId>,{
+            //            "username": "username",
+            //            "userId": "<userId>",
+            //            "version": 1|2
+            //        }
             // See RoomImplementationTest#testRoomHello*
 
             // Send location message
@@ -139,11 +113,11 @@ public class RoomImplementation {
             break;
 
         case roomJoin:
-            //		roomJoin,<roomId>,{
-            //		    "username": "username",
-            //		    "userId": "<userId>",
-            //		    "version": 2
-            //		}
+            //        roomJoin,<roomId>,{
+            //            "username": "username",
+            //            "userId": "<userId>",
+            //            "version": 2
+            //        }
             // See RoomImplementationTest#testRoomJoin
 
             // Send location message
@@ -152,10 +126,10 @@ public class RoomImplementation {
             break;
 
         case roomGoodbye:
-            //		roomGoodbye,<roomId>,{
-            //		    "username": "username",
-            //		    "userId": "<userId>"
-            //		}
+            //        roomGoodbye,<roomId>,{
+            //            "username": "username",
+            //            "userId": "<userId>"
+            //        }
             // See RoomImplementationTest#testRoomGoodbye
 
             // Say goodbye to person leaving the room
@@ -166,20 +140,20 @@ public class RoomImplementation {
             break;
 
         case roomPart:
-            //		room,<roomId>,{
-            //		    "username": "username",
-            //		    "userId": "<userId>"
-            //		}
+            //        room,<roomId>,{
+            //            "username": "username",
+            //            "userId": "<userId>"
+            //        }
             // See RoomImplementationTest#testRoomPart
 
             break;
 
         case room:
-            //		room,<roomId>,{
-            //		    "username": "username",
-            //		    "userId": "<userId>"
-            //		    "content": "<message>"
-            //		}
+            //        room,<roomId>,{
+            //            "username": "username",
+            //            "userId": "<userId>"
+            //            "content": "<message>"
+            //        }
             String content = messageBody.getString(Message.CONTENT);
 
             if ( content.charAt(0) == '/' ) {
@@ -241,62 +215,66 @@ public class RoomImplementation {
             case "/look":
             case "/examine":
                 // See RoomCommandsTest#testHandle*Look*
-            	if ( remainder == null ||  remainder.contains("room") ) {
+                if ( remainder == null ||  remainder.contains("room") ) {
                     // This is looking at or examining the entire room. Send the player location message,
                     // which includes the room description and inventory
                     endpoint.sendMessage(session, Message.createLocationMessage(userId, roomDescription));
 
-            	} else if ( remainder.contains("moon diagram") ) {
-                    endpoint.sendMessage(session, 
-                            Message.createBroadcastEvent(username + " picks up the moon diagram and looks at it fondly before dropping it again", 
-                            		userId, "You pick it up, read it, and love it for no reason. You put it down."));
+                } else if ( remainder.contains("moon diagram") ) {
+                    endpoint.sendMessage(session,
+                            Message.createBroadcastEvent(username + " picks up the moon diagram and looks at it fondly before dropping it again",
+                                    userId, "You pick it up, read it, and love it for no reason. You put it down."));
 
-            	} else if ( remainder.contains("mud") ) {
-                    endpoint.sendMessage(session, 
-                            Message.createBroadcastEvent(username + " is disgusted by mud on the floor", 
-                            		userId, "It looks awful. You look away."));
+                } else if ( remainder.contains("mud") ) {
+                    endpoint.sendMessage(session,
+                            Message.createBroadcastEvent(username + " is disgusted by mud on the floor",
+                                    userId, "It looks awful. You look away."));
 
-            	} else if ( remainder.contains("teddy") ) {
-                    endpoint.sendMessage(session, 
+                } else if ( remainder.contains("teddy") ) {
+                    endpoint.sendMessage(session,
                             Message.createBroadcastEvent("The teddy bear burps, 'Hello'"));
- 
-            	} else if ( remainder.contains("books") ) {
-                    endpoint.sendMessage(session, 
-                            Message.createBroadcastEvent(username + " is confused by the bookshelf", 
-                            		userId, "It's a bit odd"));
 
-            	} else {
+                } else if ( remainder.contains("books") ) {
+                    endpoint.sendMessage(session,
+                            Message.createBroadcastEvent(username + " is confused by the bookshelf",
+                                    userId, "It's a bit odd"));
+
+                } else {
                     endpoint.sendMessage(session, Message.createSpecificEvent(userId, LOOK_UNKNOWN));
                 }
                 break;
 
             case "/use":
-                // Custom command! 
+                // Custom command!
 
                 if ( remainder != null ) {
-                	if ( remainder.contains("teddy") ) {
-                        endpoint.sendMessage(session, 
-                                Message.createBroadcastEvent("The teddy bear squeaks! " + username + " looks around sheepishly, and sets the teddy back down.",
-                                		userId, "You pick up the teddy and put it in your mouth. It squeaks!! You quickly put it back down."));
-                        break;
-                	} else if ( remainder.contains("mud") ) {
-                        endpoint.sendMessage(session, 
-	                        Message.createBroadcastEvent(username + " has very dirty hands.",
-	                        		userId, "You pat the big pile of mud. It's very sticky, and now it's all over your hands!"));
-                        break;
-                	} else if ( remainder.contains("moon diagram") ) {
-                        endpoint.sendMessage(session, 
-    	                        Message.createBroadcastEvent(username + " picks up the moon diagram, and scrunches it into a ball! After a brief nod, " + username + " smooths it out again, and lets it float back to the floor",
-    	                        		userId, "You grab the moon diagram and crumple it into a ball. Hey! That looks like a moon! How satisfying! You unfold it, and let it go."));
-                        break;
-                	} else if ( remainder.contains("books") ) {
+                    if ( remainder.contains("teddy") ) {
                         endpoint.sendMessage(session,
-                                Message.createExitMessage(userId, "W", 
-                                		"You take a book down from the shelf, but it vanishes in your hand. Hey.. what? .. You're going West!"));
+                                Message.createBroadcastEvent("The teddy bear squeaks! " + username + " looks around sheepishly, and sets the teddy back down.",
+                                        userId, "You pick up the teddy and put it in your mouth. It squeaks!! You quickly put it back down."));
                         break;
-                	}
+                    } else if ( remainder.contains("mud") ) {
+                        endpoint.sendMessage(session,
+                            Message.createBroadcastEvent(username + " has very dirty hands.",
+                                    userId, "You pat the big pile of mud. It's very sticky, and now it's all over your hands!"));
+                        break;
+                    } else if ( remainder.contains("moon diagram") ) {
+                        endpoint.sendMessage(session,
+                                Message.createBroadcastEvent(username + " picks up the moon diagram, and scrunches it into a ball! After a brief nod, " + username + " smooths it out again, and lets it float back to the floor",
+                                        userId, "You grab the moon diagram and crumple it into a ball. Hey! That looks like a moon! How satisfying! You unfold it, and let it go."));
+                        break;
+                    } else if ( remainder.contains("book") ) {
+                        endpoint.sendMessage(session,
+                                Message.createExitMessage(userId, "W",
+                                        "You take a book down from the shelf, but it vanishes in your hand. Hey.. what? .. You're going West!"));
+                        break;
+                    }
                 }
                 endpoint.sendMessage(session, Message.createSpecificEvent(userId, "You have no idea how to use that"));
+
+                break;
+
+            case "/about":
 
                 break;
 
@@ -306,7 +284,6 @@ public class RoomImplementation {
                 break;
         }
     }
-
 
     /**
      * Given a lower case string describing the direction someone wants
@@ -360,6 +337,6 @@ public class RoomImplementation {
     }
 
     public boolean ok() {
-        return mapClient.ok();
+        return true;
     }
 }
